@@ -92,14 +92,6 @@ void Riscv::handleSupervisorTrap(uint64* trapFrame) {
                 setRegFrame(trapFrame, A0, (uint64)result);
                 return;
             }
-            case 0x41: {
-                setRegFrame(trapFrame, A0, (uint64)__getc());
-                return;
-            }
-            case 0x42: {
-                __putc((char)getRegFrame(trapFrame, A1));
-                return;
-            }
             default:
                 break;
         }
@@ -107,13 +99,8 @@ void Riscv::handleSupervisorTrap(uint64* trapFrame) {
     else if (scause == 0x8000000000000001UL) {
         // Timer interrupt — not handled (task 4 out of scope).
     }
-    else if (scause == 0x8000000000000009UL) {
-        // External interrupt — forward to console.lib so getc/putc work.
-        int irq = plic_claim();
-        if (irq == 10) {
-            console_handler();
-        }
-        plic_complete(irq);
+    else if (scause == 0x8000000000000009) {
+        console_handler();
     }
     else {
         // Unexpected trap cause.
